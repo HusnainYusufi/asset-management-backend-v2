@@ -74,6 +74,6 @@ export class MailService {
       this.configService.get<string>('FRONTEND_URL') ??
       this.configService.get<string>('BASE_URL') ??
       'http://localhost:3000';
-    return `${baseUrl.replace(/\\/$/, '')}/${path}?token=${token}`;
+    return `${baseUrl.replace(/\/$/, '')}/${path}?token=${token}`;
   }
 }
