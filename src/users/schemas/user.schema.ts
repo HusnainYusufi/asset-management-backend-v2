@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
 export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
   OWNER = 'OWNER',
   TEAM_MEMBER = 'TEAM_MEMBER',
   CLIENT_USER = 'CLIENT_USER',
@@ -16,8 +15,8 @@ export class User {
   @Prop({ required: true, trim: true })
   name: string;
 
-  @Prop()
-  passwordHash?: string;
+  @Prop({ required: true })
+  passwordHash: string;
 
   @Prop({ required: true, enum: UserRole })
   role: UserRole;
@@ -30,21 +29,6 @@ export class User {
 
   @Prop({ default: true })
   isActive: boolean;
-
-  @Prop()
-  invitationTokenHash?: string;
-
-  @Prop()
-  invitationExpiresAt?: Date;
-
-  @Prop()
-  resetPasswordTokenHash?: string;
-
-  @Prop()
-  resetPasswordExpiresAt?: Date;
-
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  invitedBy?: Types.ObjectId;
 }
 
 export type UserDocument = HydratedDocument<User>;

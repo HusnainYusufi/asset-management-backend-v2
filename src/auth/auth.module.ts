@@ -10,8 +10,6 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 import { Client, ClientSchema } from '../clients/schemas/client.schema';
 import { UsersModule } from '../users/users.module';
 import { ClientsModule } from '../clients/clients.module';
-import { RolesGuard } from './guards/roles.guard';
-import { MailModule } from '../common/mail/mail.module';
 
 @Module({
   imports: [
@@ -19,7 +17,6 @@ import { MailModule } from '../common/mail/mail.module';
     PassportModule,
     UsersModule,
     ClientsModule,
-    MailModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Client.name, schema: ClientSchema },
@@ -35,7 +32,7 @@ import { MailModule } from '../common/mail/mail.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
