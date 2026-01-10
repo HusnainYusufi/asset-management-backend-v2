@@ -11,6 +11,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 import { Client, ClientSchema } from '../clients/schemas/client.schema';
 import { UsersModule } from '../users/users.module';
 import { ClientsModule } from '../clients/clients.module';
+import { MailModule } from '../common/mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ClientsModule } from '../clients/clients.module';
     PassportModule,
     UsersModule,
     ClientsModule,
+    MailModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Client.name, schema: ClientSchema },
@@ -27,8 +29,7 @@ import { ClientsModule } from '../clients/clients.module';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET_KEY'),
         signOptions: {
-          expiresIn:
-            configService.get<StringValue>('JWT_EXPIRES_IN') ?? '12h',
+          expiresIn: configService.get<StringValue>('JWT_EXPIRES_IN') ?? '12h',
         },
       }),
     }),

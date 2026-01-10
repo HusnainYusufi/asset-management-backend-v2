@@ -34,12 +34,11 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(payload: PasswordResetPayload) {
-    const link = this.buildLink('reset-password', payload.token);
     await this.transporter.sendMail({
       from: this.getSender(),
       to: payload.to,
       subject: 'Reset your password',
-      text: `Hi ${payload.name},\n\nReset your password here: ${link}\n\nIf you did not request this, you can ignore it.`,
+      text: `Hi ${payload.name},\n\nYour password reset code is: ${payload.token}\n\nIf you did not request this, you can ignore it.`,
     });
   }
 

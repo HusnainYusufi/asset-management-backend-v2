@@ -23,7 +23,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message:
           typeof exceptionResponse === 'string'
             ? exceptionResponse
-            : exceptionResponse['message'] ?? exception.message,
+            : (exceptionResponse['message'] ?? exception.message),
         path: request.url,
         timestamp: new Date().toISOString(),
       });

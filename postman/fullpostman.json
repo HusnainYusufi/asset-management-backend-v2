@@ -1,0 +1,619 @@
+﻿{
+  "info": {
+    "name": "Asset Management Backend",
+    "_postman_id": "c2c2b1a8-6b65-4d8c-9a5a-5f9f8f5a3b10",
+    "description": "APIs implemented so far: auth + assets + showrooms + roles",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3267" },
+    { "key": "token", "value": "" },
+    { "key": "assetId", "value": "" },
+    { "key": "fileId", "value": "" },
+    { "key": "showroomId", "value": "" },
+    { "key": "templateId", "value": "" },
+    { "key": "showroomAssetId", "value": "" },
+    { "key": "showroomFileId", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Setup Superadmin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/setup-superadmin",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "setup-superadmin"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"password\": \"ChangeMe123!\",\n  \"name\": \"Super Admin\",\n  \"setupKey\": \"CHANGE_ME_SUPERADMIN_KEY\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Onboard",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/onboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "onboard"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientName\": \"Demo Client\",\n  \"ownerName\": \"Owner User\",\n  \"ownerEmail\": \"owner@example.com\",\n  \"ownerPassword\": \"ChangeMe123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password-request",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password-request"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"123456\",\n  \"password\": \"ChangeMe123!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "roles"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "role"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"TEAM_MEMBER\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assets",
+      "item": [
+        {
+          "name": "Create Asset (fields only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tabby Subscription\",\n  \"type\": \"CREDENTIALS\",\n  \"fields\": [\n    { \"key\": \"username\", \"type\": \"USERNAME\", \"value\": \"tabby-user\" },\n    { \"key\": \"password\", \"type\": \"PASSWORD\", \"value\": \"SecretPass123!\", \"isSecret\": true },\n    { \"key\": \"portal\", \"type\": \"URL\", \"value\": \"https://example.com\" }\n  ],\n  \"tags\": [\"subscription\", \"tabby\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.asset && json.asset.id) {",
+                  "  pm.collectionVariables.set('assetId', json.asset.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets"]
+            }
+          }
+        },
+        {
+          "name": "Get Asset",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets", "{{assetId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Asset",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets", "{{assetId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tabby Subscription (updated)\",\n  \"fields\": [\n    { \"key\": \"username\", \"type\": \"USERNAME\", \"value\": \"tabby-user-2\" },\n    { \"key\": \"password\", \"type\": \"PASSWORD\", \"value\": \"SecretPass456!\", \"isSecret\": true },\n    { \"key\": \"note\", \"type\": \"NOTE\", \"value\": \"Updated credentials\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Upload Files to Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets", "{{assetId}}", "files"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Asset File",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}/files/{{fileId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets", "{{assetId}}", "files", "{{fileId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Asset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["assets", "{{assetId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Showrooms",
+      "item": [
+        {
+          "name": "Create Showroom",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Riyadh Flagship\",\n  \"location\": \"Riyadh\",\n  \"metaFields\": [\n    { \"key\": \"manager\", \"value\": \"Ali\" },\n    { \"key\": \"phone\", \"value\": \"+966000000000\" }\n  ],\n  \"templates\": [\n    {\n      \"name\": \"Banner\",\n      \"description\": \"Main banner sizes\",\n      \"sizes\": [\n        { \"label\": \"Homepage Hero\", \"width\": 1440, \"height\": 520, \"unit\": \"px\" }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.showroom && json.showroom.id) {",
+                  "  pm.collectionVariables.set('showroomId', json.showroom.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Showrooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms"]
+            }
+          }
+        },
+        {
+          "name": "Get Showroom",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Showroom",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": \"Riyadh - Main\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Showroom",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}"]
+            }
+          }
+        },
+        {
+          "name": "Add Showroom Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "templates"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Flex\",\n  \"description\": \"Flex sizes\",\n  \"sizes\": [\n    { \"label\": \"Outdoor\", \"width\": 3000, \"height\": 1500, \"unit\": \"px\" }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.showroom && json.showroom.templates && json.showroom.templates.length) {",
+                  "  const t = json.showroom.templates[json.showroom.templates.length - 1];",
+                  "  if (t.id) {",
+                  "    pm.collectionVariables.set('templateId', t.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Showroom Template",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "templates", "{{templateId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated template description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Showroom Template",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "templates", "{{templateId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Showroom Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Canva Design Link\",\n  \"type\": \"LINKS\",\n  \"fields\": [\n    { \"key\": \"url\", \"type\": \"URL\", \"value\": \"https://canva.com/design/123\" }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.asset && json.asset.id) {",
+                  "  pm.collectionVariables.set('showroomAssetId', json.asset.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Showroom Assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets"]
+            }
+          }
+        },
+        {
+          "name": "Get Showroom Asset",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets/{{showroomAssetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets", "{{showroomAssetId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Showroom Asset",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets/{{showroomAssetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets", "{{showroomAssetId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Canva Design Link (updated)\",\n  \"fields\": [\n    { \"key\": \"url\", \"type\": \"URL\", \"value\": \"https://canva.com/design/updated\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Upload Files to Showroom Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets/{{showroomAssetId}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets", "{{showroomAssetId}}", "files"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Showroom Asset File",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets/{{showroomAssetId}}/files/{{showroomFileId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets", "{{showroomAssetId}}", "files", "{{showroomFileId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Showroom Asset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/showrooms/{{showroomId}}/assets/{{showroomAssetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["showrooms", "{{showroomId}}", "assets", "{{showroomAssetId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

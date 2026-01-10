@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
 export enum UserRole {
+  SUPERADMIN = 'SUPERADMIN',
   OWNER = 'OWNER',
   TEAM_MEMBER = 'TEAM_MEMBER',
   CLIENT_USER = 'CLIENT_USER',
@@ -29,6 +30,12 @@ export class User {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop()
+  resetTokenHash?: string;
+
+  @Prop()
+  resetTokenExpiresAt?: Date;
 }
 
 export type UserDocument = HydratedDocument<User>;

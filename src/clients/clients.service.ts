@@ -6,7 +6,8 @@ import { Client, ClientDocument } from './schemas/client.schema';
 @Injectable()
 export class ClientsService {
   constructor(
-    @InjectModel(Client.name) private readonly clientModel: Model<ClientDocument>,
+    @InjectModel(Client.name)
+    private readonly clientModel: Model<ClientDocument>,
   ) {}
 
   async findById(id: string) {
