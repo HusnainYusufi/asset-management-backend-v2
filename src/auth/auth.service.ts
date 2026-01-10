@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
@@ -108,8 +108,12 @@ export class AuthService {
   }
 
   private sanitizeUser(user: User | UserDocument) {
+    const id =
+      'id' in user
+        ? user.id
+        : (user as { _id?: Types.ObjectId })._id?.toString();
     return {
-      id: user.id,
+      id,
       email: user.email,
       name: user.name,
       role: user.role,
