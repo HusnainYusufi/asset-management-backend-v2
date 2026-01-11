@@ -1,4 +1,10 @@
-﻿import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+﻿import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ShowroomMetaFieldDto {
@@ -14,9 +20,11 @@ export class ShowroomTemplateSizeDto {
   label: string;
 
   @Type(() => Number)
+  @IsNumber()
   width: number;
 
   @Type(() => Number)
+  @IsNumber()
   height: number;
 
   @IsOptional()
