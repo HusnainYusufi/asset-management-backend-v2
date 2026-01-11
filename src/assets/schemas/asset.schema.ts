@@ -87,8 +87,8 @@ export class Asset {
   @Prop({ trim: true })
   description?: string;
 
-  @Prop({ required: true, enum: AssetType, default: AssetType.GENERAL })
-  type: AssetType;
+  @Prop({ trim: true, default: AssetType.GENERAL })
+  type?: string;
 
   @Prop({ required: true, index: true })
   tenantId: string;

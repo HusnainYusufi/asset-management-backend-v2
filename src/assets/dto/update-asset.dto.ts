@@ -1,13 +1,11 @@
 ﻿import {
   IsArray,
-  IsEnum,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { AssetFieldDto } from './asset-field.dto';
-import { AssetType } from '../schemas/asset.schema';
 
 export class UpdateAssetDto {
   @IsOptional()
@@ -20,8 +18,8 @@ export class UpdateAssetDto {
 
   @IsOptional()
   @Transform(({ value }) => (value === '' || value === null ? undefined : value))
-  @IsEnum(AssetType)
-  type?: AssetType;
+  @IsString()
+  type?: string;
 
   @IsOptional()
   @IsArray()
