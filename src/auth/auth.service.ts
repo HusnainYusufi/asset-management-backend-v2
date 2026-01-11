@@ -9,8 +9,9 @@ import { Model, Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomInt, randomUUID } from 'crypto';
-import { User, UserDocument, UserRole } from '../users/schemas/user.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { Client, ClientDocument } from '../clients/schemas/client.schema';
+import { Role, RoleDocument } from '../roles/schemas/role.schema';
 import { OnboardDto } from './dto/onboard.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthenticatedUser } from './interfaces/authenticated-user.interface';
@@ -25,6 +26,7 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Client.name)
     private readonly clientModel: Model<ClientDocument>,
+    @InjectModel(Role.name) private readonly roleModel: Model<RoleDocument>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
@@ -45,29 +47,31 @@ export class AuthService {
       isActive: true,
     });
 
+    const ownerRole = await this.findRoleOrFail(dto.ownerRoleId);
     const passwordHash = await bcrypt.hash(dto.ownerPassword, 12);
     const owner = await this.userModel.create({
       email: dto.ownerEmail,
       name: dto.ownerName,
       passwordHash,
-      role: UserRole.OWNER,
+      roleId: ownerRole._id,
       tenantId,
       clientId: client._id,
       isActive: true,
     });
 
     const accessToken = await this.signToken({
-      userId: owner.id,
+      userId: owner._id.toString(),
       tenantId,
-      role: owner.role,
-      clientId: client.id,
+      roleId: owner.roleId.toString(),
+      roleName: ownerRole.name,
+      clientId: client._id.toString(),
     });
 
     return {
       accessToken,
-      user: this.sanitizeUser(owner),
+      user: await this.sanitizeUser(owner, ownerRole),
       client: {
-        id: client.id,
+        id: client._id.toString(),
         name: client.name,
         tenantId: client.tenantId,
       },
@@ -85,16 +89,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const role = await this.roleModel.findById(user.roleId).lean();
+    if (!role) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const accessToken = await this.signToken({
-      userId: user.id,
+      userId: user._id.toString(),
       tenantId: user.tenantId,
-      role: user.role,
+      roleId: user.roleId.toString(),
+      roleName: role.name,
       clientId: user.clientId?.toString(),
     });
 
     return {
       accessToken,
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user, role),
     };
   }
 
@@ -103,7 +113,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return { user: this.sanitizeUser(user) };
+    return { user: await this.sanitizeUser(user) };
   }
 
   async setupSuperAdmin(dto: SetupSuperAdminDto) {
@@ -112,8 +122,13 @@ export class AuthService {
       throw new BadRequestException('Invalid setup key');
     }
 
+    const superadminRole = await this.findRoleOrFail(dto.roleId);
+    if (superadminRole.name !== 'SUPERADMIN') {
+      throw new BadRequestException('Role must be SUPERADMIN');
+    }
+
     const existing = await this.userModel
-      .findOne({ role: UserRole.SUPERADMIN })
+      .findOne({ roleId: superadminRole._id })
       .lean();
     if (existing) {
       throw new BadRequestException('Superadmin already exists');
@@ -131,20 +146,21 @@ export class AuthService {
       email: dto.email,
       name: dto.name,
       passwordHash,
-      role: UserRole.SUPERADMIN,
+      roleId: superadminRole._id,
       tenantId: 'system',
       isActive: true,
     });
 
     const accessToken = await this.signToken({
-      userId: superadmin.id,
+      userId: superadmin._id.toString(),
       tenantId: superadmin.tenantId,
-      role: superadmin.role,
+      roleId: superadmin.roleId.toString(),
+      roleName: superadminRole.name,
     });
 
     return {
       accessToken,
-      user: this.sanitizeUser(superadmin),
+      user: await this.sanitizeUser(superadmin, superadminRole),
     };
   }
 
@@ -206,18 +222,30 @@ export class AuthService {
     return createHash('sha256').update(token).digest('hex');
   }
 
-  private sanitizeUser(user: User | UserDocument) {
-    const id =
-      'id' in user
-        ? user.id
-        : (user as { _id?: Types.ObjectId })._id?.toString();
+  private async sanitizeUser(
+    user: UserDocument | (User & { _id?: Types.ObjectId | string }),
+    role?: Role | RoleDocument,
+  ) {
+    const rawId = (user as { _id?: Types.ObjectId | string })._id;
+    const id = rawId ? rawId.toString() : undefined;
+    const resolvedRole =
+      role ?? (await this.roleModel.findById(user.roleId).lean());
     return {
       id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      roleId: user.roleId?.toString(),
+      roleName: resolvedRole?.name,
       tenantId: user.tenantId,
       clientId: user.clientId?.toString(),
     };
+  }
+
+  private async findRoleOrFail(roleId: string) {
+    const role = await this.roleModel.findById(roleId).lean();
+    if (!role) {
+      throw new BadRequestException('Role not found');
+    }
+    return role;
   }
 }

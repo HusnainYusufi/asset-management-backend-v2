@@ -1,11 +1,10 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { UserRole } from '../schemas/user.schema';
+import { IsMongoId, IsOptional } from 'class-validator';
 
 export class UpdateUserRoleDto {
-  @IsEnum(UserRole)
-  role: UserRole;
+  @IsMongoId()
+  roleId: string;
 
   @IsOptional()
-  @IsString()
+  @IsMongoId()
   clientId?: string;
 }

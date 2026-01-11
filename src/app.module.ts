@@ -8,6 +8,7 @@ import { ClientsModule } from './clients/clients.module';
 import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { ShowroomsModule } from './showrooms/showrooms.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ShowroomsModule } from './showrooms/showrooms.module';
     AuthModule,
     ClientsModule,
     UsersModule,
+    RolesModule,
     AssetsModule,
     ShowroomsModule,
   ],

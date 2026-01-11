@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { Client, ClientSchema } from '../clients/schemas/client.schema';
+import { Role, RoleSchema } from '../roles/schemas/role.schema';
 import { UsersModule } from '../users/users.module';
 import { ClientsModule } from '../clients/clients.module';
 import { MailModule } from '../common/mail/mail.module';
@@ -23,6 +24,7 @@ import { MailModule } from '../common/mail/mail.module';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Client.name, schema: ClientSchema },
+      { name: Role.name, schema: RoleSchema },
     ]),
     JwtModule.registerAsync({
       inject: [ConfigService],

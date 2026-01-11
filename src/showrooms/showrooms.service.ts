@@ -43,7 +43,9 @@ type ShowroomResponseInput = Omit<Showroom, 'clientId' | 'templates'> & {
   _id?: Types.ObjectId | string;
   id?: string;
   clientId?: Types.ObjectId | string;
-  templates?: Types.DocumentArray<ShowroomTemplate> | ShowroomTemplateResponse[];
+  templates?:
+    | Types.DocumentArray<ShowroomTemplate>
+    | ShowroomTemplateResponse[];
 };
 
 type ShowroomAssetResponseFile = ShowroomAssetFile & {
@@ -97,7 +99,7 @@ export class ShowroomsService {
     const showrooms = await this.showroomModel
       .find({ tenantId: user.tenantId, clientId })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean<ShowroomResponseInput[]>();
 
     return { showrooms: showrooms.map((s) => this.toShowroomResponse(s)) };
   }
@@ -106,7 +108,7 @@ export class ShowroomsService {
     const clientId = this.requireClientId(user);
     const showroom = await this.showroomModel
       .findOne({ _id: id, tenantId: user.tenantId, clientId })
-      .lean();
+      .lean<ShowroomResponseInput>();
     if (!showroom) {
       throw new NotFoundException('Showroom not found');
     }
@@ -131,7 +133,7 @@ export class ShowroomsService {
         { $set: updatePayload },
         { new: true },
       )
-      .lean();
+      .lean<ShowroomResponseInput>();
 
     if (!showroom) {
       throw new NotFoundException('Showroom not found');
@@ -157,7 +159,7 @@ export class ShowroomsService {
       clientId,
       showroomId: showroom._id,
     });
-    await this.removeShowroomFiles(showroom.id, user);
+    await this.removeShowroomFiles(showroom._id.toString(), user);
 
     return { deleted: true };
   }
@@ -245,7 +247,7 @@ export class ShowroomsService {
     const assets = await this.showroomAssetModel
       .find({ tenantId: user.tenantId, clientId, showroomId })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean<ShowroomAssetResponseInput[]>();
 
     return { assets: assets.map((asset) => this.toAssetResponse(asset)) };
   }
@@ -255,7 +257,7 @@ export class ShowroomsService {
     await this.getShowroomEntity(showroomId, user);
     const asset = await this.showroomAssetModel
       .findOne({ _id: assetId, tenantId: user.tenantId, clientId, showroomId })
-      .lean();
+      .lean<ShowroomAssetResponseInput>();
     if (!asset) {
       throw new NotFoundException('Showroom asset not found');
     }
@@ -286,7 +288,7 @@ export class ShowroomsService {
         { $set: updatePayload },
         { new: true },
       )
-      .lean();
+      .lean<ShowroomAssetResponseInput>();
 
     if (!asset) {
       throw new NotFoundException('Showroom asset not found');
@@ -452,6 +454,7 @@ export class ShowroomsService {
 
   private toShowroomResponse(showroom: ShowroomResponseInput) {
     const id = showroom.id ?? (showroom._id ? showroom._id.toString() : '');
+    const templates = (showroom.templates ?? []) as ShowroomTemplateResponse[];
     return {
       id,
       name: showroom.name,
@@ -459,7 +462,7 @@ export class ShowroomsService {
       tenantId: showroom.tenantId,
       clientId: showroom.clientId?.toString?.() ?? showroom.clientId,
       metaFields: showroom.metaFields ?? [],
-      templates: (showroom.templates ?? []).map((template) => ({
+      templates: templates.map((template) => ({
         id: template.id ?? (template._id ? template._id.toString() : ''),
         name: template.name,
         description: template.description,
@@ -473,6 +476,7 @@ export class ShowroomsService {
 
   private toAssetResponse(asset: ShowroomAssetResponseInput) {
     const id = asset.id ?? (asset._id ? asset._id.toString() : '');
+    const files = (asset.files ?? []) as ShowroomAssetResponseFile[];
     return {
       id,
       name: asset.name,
@@ -485,7 +489,7 @@ export class ShowroomsService {
       fields: (asset.fields ?? []).map((field) =>
         this.mapFieldForResponse(field),
       ),
-      files: (asset.files ?? []).map((file) => ({
+      files: files.map((file) => ({
         id: file.id ?? (file._id ? file._id.toString() : ''),
         filename: file.filename,
         originalName: file.originalName,

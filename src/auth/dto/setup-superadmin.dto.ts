@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsMongoId, IsString, MinLength } from 'class-validator';
 
 export class SetupSuperAdminDto {
   @IsEmail()
@@ -13,4 +13,7 @@ export class SetupSuperAdminDto {
 
   @IsString()
   setupKey: string;
+
+  @IsMongoId()
+  roleId: string;
 }

@@ -74,7 +74,7 @@ export class AssetsService {
     const assets = await this.assetModel
       .find({ tenantId: user.tenantId, clientId })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean<AssetResponseInput[]>();
 
     return { assets: assets.map((asset) => this.toResponse(asset)) };
   }
@@ -83,7 +83,7 @@ export class AssetsService {
     const clientId = this.requireClientId(user);
     const asset = await this.assetModel
       .findOne({ _id: id, tenantId: user.tenantId, clientId })
-      .lean();
+      .lean<AssetResponseInput>();
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -108,7 +108,7 @@ export class AssetsService {
         { $set: updatePayload },
         { new: true },
       )
-      .lean();
+      .lean<AssetResponseInput>();
 
     if (!asset) {
       throw new NotFoundException('Asset not found');
@@ -129,7 +129,7 @@ export class AssetsService {
       throw new NotFoundException('Asset not found');
     }
 
-    await this.removeAssetFiles(asset.id, user);
+    await this.removeAssetFiles(asset._id.toString(), user);
 
     return { deleted: true };
   }
@@ -233,6 +233,7 @@ export class AssetsService {
 
   private toResponse(asset: AssetResponseInput) {
     const id = asset.id ?? (asset._id ? asset._id.toString() : '');
+    const files = (asset.files ?? []) as AssetResponseFile[];
     return {
       id,
       name: asset.name,
@@ -244,7 +245,7 @@ export class AssetsService {
       fields: (asset.fields ?? []).map((field) =>
         this.mapFieldForResponse(field),
       ),
-      files: (asset.files ?? []).map((file) => ({
+      files: files.map((file) => ({
         id: file.id ?? (file._id ? file._id.toString() : ''),
         filename: file.filename,
         originalName: file.originalName,

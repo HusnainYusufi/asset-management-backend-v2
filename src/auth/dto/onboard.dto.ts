@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsMongoId,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class OnboardDto {
   @IsString()
@@ -15,4 +21,7 @@ export class OnboardDto {
   @IsString()
   @MinLength(8)
   ownerPassword: string;
+
+  @IsMongoId()
+  ownerRoleId: string;
 }

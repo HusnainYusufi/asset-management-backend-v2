@@ -10,6 +10,10 @@ export class ClientsService {
     private readonly clientModel: Model<ClientDocument>,
   ) {}
 
+  async findAll() {
+    return this.clientModel.find().lean();
+  }
+
   async findById(id: string) {
     return this.clientModel.findById(id).lean();
   }
