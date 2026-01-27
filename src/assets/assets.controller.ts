@@ -29,7 +29,7 @@ const uploadsRoot = process.env.UPLOADS_DIR ?? 'uploads';
 @Controller('assets')
 @UseGuards(JwtAuthGuard)
 export class AssetsController {
-  constructor(private readonly assetsService: AssetsService) {}
+  constructor(private readonly assetsService: AssetsService) { }
 
   @Post()
   async create(
@@ -42,6 +42,11 @@ export class AssetsController {
   @Get()
   async list(@CurrentUser() user: AuthenticatedUser) {
     return this.assetsService.list(user);
+  }
+
+  @Get('credentials')
+  async getCredentials(@CurrentUser() user: AuthenticatedUser) {
+    return this.assetsService.getCredentials(user);
   }
 
   @Get(':id')

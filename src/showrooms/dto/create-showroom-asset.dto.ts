@@ -1,5 +1,7 @@
 ﻿import {
   IsArray,
+  IsBoolean,
+  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -31,4 +33,12 @@ export class CreateShowroomAssetDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @IsDateString()
+  expirationDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  expirationNotificationsEnabled?: boolean;
 }

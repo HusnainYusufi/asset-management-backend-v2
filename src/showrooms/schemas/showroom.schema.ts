@@ -187,6 +187,15 @@ export class ShowroomAsset {
 
   @Prop({ type: [String], default: [] })
   tags: string[];
+
+  @Prop({ type: Date })
+  expirationDate?: Date;
+
+  @Prop({ default: false })
+  expirationNotificationsEnabled?: boolean;
+
+  @Prop({ type: [Date], default: [] })
+  notificationsSentAt?: Date[];
 }
 
 export type ShowroomAssetDocument = HydratedDocument<ShowroomAsset>;

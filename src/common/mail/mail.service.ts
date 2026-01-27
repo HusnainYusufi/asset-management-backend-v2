@@ -15,6 +15,15 @@ interface PasswordResetPayload {
   token: string;
 }
 
+interface ExpirationReminderPayload {
+  to: string;
+  name: string;
+  assetName: string;
+  daysUntilExpiry: number;
+  clientName: string;
+  showroomName?: string;
+}
+
 @Injectable()
 export class MailService {
   private transporter: nodemailer.Transporter;
@@ -39,6 +48,41 @@ export class MailService {
       to: payload.to,
       subject: 'Reset your password',
       text: `Hi ${payload.name},\n\nYour password reset code is: ${payload.token}\n\nIf you did not request this, you can ignore it.`,
+    });
+  }
+
+  async sendExpirationReminderEmail(payload: ExpirationReminderPayload) {
+    const { to, name, assetName, daysUntilExpiry, clientName, showroomName } =
+      payload;
+
+    const locationText = showroomName
+      ? `in showroom "${showroomName}" of ${clientName}`
+      : `in ${clientName}`;
+
+    const subject =
+      daysUntilExpiry === 0
+        ? `[URGENT] "${assetName}" expires TODAY!`
+        : `Reminder: "${assetName}" expires in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? '' : 's'}`;
+
+    const expiryText =
+      daysUntilExpiry === 0
+        ? 'TODAY'
+        : `in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? '' : 's'}`;
+
+    const text = `Hi ${name},
+
+This is a reminder that the asset "${assetName}" ${locationText} will expire ${expiryText}.
+
+Please take action to renew the subscription or update the credentials.
+
+Best regards,
+Asset Management System`;
+
+    await this.transporter.sendMail({
+      from: this.getSender(),
+      to,
+      subject,
+      text,
     });
   }
 

@@ -79,6 +79,36 @@ export class AssetsService {
     return { assets: assets.map((asset) => this.toResponse(asset)) };
   }
 
+  async getCredentials(user: AuthenticatedUser) {
+    const clientId = this.requireClientId(user);
+
+    // Fetch all assets for this client
+    const assets = await this.assetModel
+      .find({ tenantId: user.tenantId, clientId })
+      .sort({ createdAt: -1 })
+      .lean<AssetResponseInput[]>();
+
+    // Filter for text-only assets (no files)
+    const textAssets = assets.filter(
+      (asset) => !asset.files || asset.files.length === 0
+    );
+
+    // Format credentials response
+    const credentials = textAssets.map((asset) => ({
+      id: asset.id ?? (asset._id ? asset._id.toString() : ''),
+      name: asset.name,
+      type: asset.type,
+      fields: (asset.fields ?? []).map((field) =>
+        this.mapFieldForResponse(field),
+      ),
+      tags: asset.tags ?? [],
+      createdAt: (asset as { createdAt?: Date }).createdAt,
+      updatedAt: (asset as { updatedAt?: Date }).updatedAt,
+    }));
+
+    return { credentials };
+  }
+
   async getById(id: string, user: AuthenticatedUser) {
     const clientId = this.requireClientId(user);
     const asset = await this.assetModel

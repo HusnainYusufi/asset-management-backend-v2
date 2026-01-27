@@ -44,8 +44,8 @@ type ShowroomResponseInput = Omit<Showroom, 'clientId' | 'templates'> & {
   id?: string;
   clientId?: Types.ObjectId | string;
   templates?:
-    | Types.DocumentArray<ShowroomTemplate>
-    | ShowroomTemplateResponse[];
+  | Types.DocumentArray<ShowroomTemplate>
+  | ShowroomTemplateResponse[];
 };
 
 type ShowroomAssetResponseFile = ShowroomAssetFile & {
@@ -164,6 +164,44 @@ export class ShowroomsService {
     return { deleted: true };
   }
 
+  async getShowroomCredentials(id: string, user: AuthenticatedUser) {
+    const clientId = this.requireClientId(user);
+
+    // Verify showroom exists and user has access
+    await this.getShowroomEntity(id, user);
+
+    // Fetch all assets for this showroom
+    const assets = await this.showroomAssetModel
+      .find({
+        tenantId: user.tenantId,
+        clientId,
+        showroomId: id
+      })
+      .sort({ createdAt: -1 })
+      .lean<ShowroomAssetResponseInput[]>();
+
+    // Filter for text-only assets (no files)
+    const textAssets = assets.filter(
+      (asset) => !asset.files || asset.files.length === 0
+    );
+
+    // Format credentials response
+    const credentials = textAssets.map((asset) => ({
+      id: asset.id ?? (asset._id ? asset._id.toString() : ''),
+      name: asset.name,
+      type: asset.type,
+      fields: (asset.fields ?? []).map((field) =>
+        this.mapFieldForResponse(field),
+      ),
+      tags: asset.tags ?? [],
+      createdAt: (asset as { createdAt?: Date }).createdAt,
+      updatedAt: (asset as { updatedAt?: Date }).updatedAt,
+    }));
+
+    return { credentials };
+  }
+
+
   async addTemplate(
     showroomId: string,
     dto: ShowroomTemplateDto,
@@ -236,6 +274,8 @@ export class ShowroomsService {
       showroomId,
       fields,
       tags: dto.tags ?? [],
+      expirationDate: dto.expirationDate ? new Date(dto.expirationDate) : undefined,
+      expirationNotificationsEnabled: dto.expirationNotificationsEnabled ?? false,
     });
 
     return { asset: this.toAssetResponse(asset) };
@@ -280,6 +320,12 @@ export class ShowroomsService {
     if (dto.tags !== undefined) updatePayload.tags = dto.tags;
     if (dto.fields !== undefined) {
       updatePayload.fields = this.mapFieldsForStorage(dto.fields ?? []);
+    }
+    if (dto.expirationNotificationsEnabled !== undefined) {
+      updatePayload.expirationNotificationsEnabled = dto.expirationNotificationsEnabled;
+    }
+    if (dto.expirationDate !== undefined) {
+      updatePayload.expirationDate = dto.expirationDate ? new Date(dto.expirationDate) : null;
     }
 
     const asset = await this.showroomAssetModel
@@ -500,6 +546,8 @@ export class ShowroomsService {
         uploadedBy: file.uploadedBy,
         uploadedAt: file.uploadedAt,
       })),
+      expirationDate: asset.expirationDate,
+      expirationNotificationsEnabled: asset.expirationNotificationsEnabled ?? false,
       createdAt: (asset as { createdAt?: Date }).createdAt,
       updatedAt: (asset as { updatedAt?: Date }).updatedAt,
     };

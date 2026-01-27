@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { ShowroomsModule } from './showrooms/showrooms.module';
 import { RolesModule } from './roles/roles.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { RolesModule } from './roles/roles.module';
     RolesModule,
     AssetsModule,
     ShowroomsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

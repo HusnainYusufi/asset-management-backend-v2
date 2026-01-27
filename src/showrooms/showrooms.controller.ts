@@ -32,7 +32,15 @@ const uploadsRoot = process.env.UPLOADS_DIR ?? 'uploads';
 @Controller('showrooms')
 @UseGuards(JwtAuthGuard)
 export class ShowroomsController {
-  constructor(private readonly showroomsService: ShowroomsService) {}
+  constructor(private readonly showroomsService: ShowroomsService) { }
+
+  @Get(':id/credentials')
+  async getCredentials(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.showroomsService.getShowroomCredentials(id, user);
+  }
 
   @Post()
   async create(
@@ -68,6 +76,7 @@ export class ShowroomsController {
   ) {
     return this.showroomsService.removeShowroom(id, user);
   }
+
 
   @Post(':id/templates')
   async addTemplate(

@@ -1,5 +1,6 @@
 ﻿import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsOptional,
   IsString,
@@ -32,4 +33,11 @@ export class UpdateShowroomAssetDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  expirationDate?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  expirationNotificationsEnabled?: boolean;
 }
