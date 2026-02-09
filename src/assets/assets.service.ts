@@ -64,6 +64,8 @@ export class AssetsService {
       clientId,
       fields,
       tags: dto.tags ?? [],
+      expirationDate: dto.expirationDate ? new Date(dto.expirationDate) : undefined,
+      expirationNotificationsEnabled: dto.expirationNotificationsEnabled ?? false,
     });
 
     return { asset: this.toResponse(asset) };
@@ -130,6 +132,12 @@ export class AssetsService {
     if (dto.tags !== undefined) updatePayload.tags = dto.tags;
     if (dto.fields !== undefined) {
       updatePayload.fields = this.mapFieldsForStorage(dto.fields ?? []);
+    }
+    if (dto.expirationNotificationsEnabled !== undefined) {
+      updatePayload.expirationNotificationsEnabled = dto.expirationNotificationsEnabled;
+    }
+    if (dto.expirationDate !== undefined) {
+      updatePayload.expirationDate = dto.expirationDate ? new Date(dto.expirationDate) : null;
     }
 
     const asset = await this.assetModel
@@ -286,6 +294,8 @@ export class AssetsService {
         uploadedBy: file.uploadedBy,
         uploadedAt: file.uploadedAt,
       })),
+      expirationDate: asset.expirationDate,
+      expirationNotificationsEnabled: asset.expirationNotificationsEnabled ?? false,
       createdAt: (asset as { createdAt?: Date }).createdAt,
       updatedAt: (asset as { updatedAt?: Date }).updatedAt,
     };

@@ -1,7 +1,10 @@
 ﻿import {
   IsArray,
+  IsBoolean,
+  IsDateString,
   IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
@@ -30,4 +33,14 @@ export class CreateAssetDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @ValidateIf((_o, value) => value !== null && value !== undefined && value !== '')
+  @IsDateString()
+  expirationDate?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  expirationNotificationsEnabled?: boolean;
 }
