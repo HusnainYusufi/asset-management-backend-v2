@@ -9,7 +9,10 @@
       "Bash(npx biome check:*)",
       "Bash(curl:*)",
       "Bash(find:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(ls:*)",
+      "Bash(dir \"c:\\\\Users\\\\HusnainYousufi-Senio\\\\new\\\\asset-management-backend-v2\\\\uploads\"\" 2>&1 || echo \"Directory does not exist \")",
+      "Bash(dir:*)"
     ]
   }
 }
