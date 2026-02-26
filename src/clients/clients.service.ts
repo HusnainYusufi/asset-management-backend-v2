@@ -44,33 +44,38 @@ export class ClientsService {
     return this.clientModel.findById(id).lean();
   }
 
-  async deleteClient(clientId: string, tenantId: string) {
-    const client = await this.clientModel.findOne({
-      _id: clientId,
-      tenantId,
-    });
+  async deleteClient(clientId: string) {
+    const client = await this.clientModel.findById(clientId);
 
     if (!client) {
       throw new NotFoundException('Client not found');
     }
 
+    const clientTenantId = client.tenantId;
+
     // Delete all related data in parallel
     await Promise.all([
-      this.assetModel.deleteMany({ clientId, tenantId }),
-      this.showroomAssetModel.deleteMany({ clientId, tenantId }),
-      this.showroomModel.deleteMany({ clientId, tenantId }),
-      this.notificationModel.deleteMany({ clientId, tenantId }),
+      this.assetModel.deleteMany({ clientId, tenantId: clientTenantId }),
+      this.showroomAssetModel.deleteMany({
+        clientId,
+        tenantId: clientTenantId,
+      }),
+      this.showroomModel.deleteMany({ clientId, tenantId: clientTenantId }),
+      this.notificationModel.deleteMany({
+        clientId,
+        tenantId: clientTenantId,
+      }),
       this.userModel.deleteMany({ clientId }),
     ]);
 
     // Delete the client itself
-    await this.clientModel.deleteOne({ _id: clientId, tenantId });
+    await this.clientModel.deleteOne({ _id: clientId });
 
     // Remove all uploaded files for this client
     const clientDir = join(
       process.cwd(),
       this.uploadsRoot,
-      tenantId,
+      clientTenantId,
       clientId,
     );
     await rm(clientDir, { recursive: true, force: true }).catch(() => {
