@@ -52,24 +52,31 @@ export class ClientsService {
     }
 
     const clientTenantId = client.tenantId;
+    const clientObjectId = client._id;
 
     // Delete all related data in parallel
     await Promise.all([
-      this.assetModel.deleteMany({ clientId, tenantId: clientTenantId }),
+      this.assetModel.deleteMany({
+        clientId: clientObjectId,
+        tenantId: clientTenantId,
+      }),
       this.showroomAssetModel.deleteMany({
-        clientId,
+        clientId: clientObjectId,
         tenantId: clientTenantId,
       }),
-      this.showroomModel.deleteMany({ clientId, tenantId: clientTenantId }),
+      this.showroomModel.deleteMany({
+        clientId: clientObjectId,
+        tenantId: clientTenantId,
+      }),
       this.notificationModel.deleteMany({
-        clientId,
+        clientId: clientObjectId,
         tenantId: clientTenantId,
       }),
-      this.userModel.deleteMany({ clientId }),
+      this.userModel.deleteMany({ clientId: clientObjectId }),
     ]);
 
     // Delete the client itself
-    await this.clientModel.deleteOne({ _id: clientId });
+    await this.clientModel.findByIdAndDelete(clientObjectId);
 
     // Remove all uploaded files for this client
     const clientDir = join(
